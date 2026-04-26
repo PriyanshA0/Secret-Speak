@@ -2,12 +2,14 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { getCurrentUser } from "@/lib/auth";
+import NotificationsNavLink from "@/components/NotificationsNavLink";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/trending", label: "Trending" },
   { href: "/create", label: "Create Post" },
   { href: "/profile", label: "Profile" },
+  { href: "/notifications", label: "Notifications" },
   { href: "/guidelines", label: "Guidelines" },
 ];
 
@@ -39,14 +41,21 @@ export default async function Navbar() {
 
       <nav className="mt-8 space-y-2">
         {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex items-center justify-between rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
-          >
-            <span>{item.label}</span>
-            <span className="text-xs text-white/30">→</span>
-          </Link>
+          item.href === "/notifications" ? (
+            <NotificationsNavLink
+              key={item.href}
+              className="flex items-center justify-between rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
+            />
+          ) : (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center justify-between rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-white/70 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
+            >
+              <span>{item.label}</span>
+              <span className="text-xs text-white/30">→</span>
+            </Link>
+          )
         ))}
       </nav>
 

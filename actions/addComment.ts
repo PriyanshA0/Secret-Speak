@@ -7,6 +7,7 @@ import { sanitizeAndFilterText } from "@/lib/post-helpers";
 import { requireCurrentUser } from "@/lib/auth";
 import CommentModel from "@/models/Comment";
 import PostModel from "@/models/Post";
+import NotificationModel from "@/models/Notification";
 
 export async function addComment(postId: string, payload: unknown) {
   const user = await requireCurrentUser();
@@ -22,6 +23,21 @@ export async function addComment(postId: string, payload: unknown) {
   });
 
   await PostModel.updateOne({ _id: postId }, { $inc: { commentCount: 1 } });
+
+  const post = await PostModel.findById(postId)
+    .populate("author", "clerkId")
+    .select("author content")
+    .lean();
+
+  const author = (post?.author as { clerkId?: string } | undefined)?.clerkId;
+  if (author && author !== user.clerkId) {
+    await NotificationModel.create({
+      recipientUserId: author,
+      type: "comment",
+      postId,
+      postSnippet: (post?.content ?? "").slice(0, 40),
+    });
+  }
 
   revalidatePath(`/post/${postId}`);
   revalidatePath("/");

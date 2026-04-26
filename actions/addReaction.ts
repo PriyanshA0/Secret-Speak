@@ -6,6 +6,7 @@ import { addReactionSchema } from "@/lib/validators";
 import { requireCurrentUser } from "@/lib/auth";
 import ReactionModel from "@/models/Reaction";
 import PostModel from "@/models/Post";
+import NotificationModel from "@/models/Notification";
 
 export async function addReaction(postId: string, payload: unknown) {
   const user = await requireCurrentUser();
@@ -18,6 +19,21 @@ export async function addReaction(postId: string, payload: unknown) {
   if (!existing) {
     await ReactionModel.create({ post: postId, user: user._id, emoji: parsed.emoji });
     await PostModel.updateOne({ _id: postId }, { $inc: { [`reactions.${parsed.emoji}`]: 1 } });
+
+    const post = await PostModel.findById(postId)
+      .populate("author", "clerkId")
+      .select("author content")
+      .lean();
+
+    const author = (post?.author as { clerkId?: string } | undefined)?.clerkId;
+    if (author && author !== user.clerkId) {
+      await NotificationModel.create({
+        recipientUserId: author,
+        type: "reaction",
+        postId,
+        postSnippet: (post?.content ?? "").slice(0, 40),
+      });
+    }
   }
 
   revalidatePath("/");
