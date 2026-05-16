@@ -76,16 +76,16 @@ export default function NotificationsCenter() {
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-white/10 bg-white/5 p-5 text-white shadow-[0_20px_80px_rgba(0,0,0,0.22)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 neo-card p-5 text-black hard-shadow">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-white/40">Inbox</p>
-          <p className="mt-2 text-sm text-white/70">{unreadLabel}</p>
+          <p className="mt-2 text-sm text-black/70">{unreadLabel}</p>
         </div>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => void fetchNotifications()}
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:bg-white/10"
+            className="rounded-full border-2 border-black bg-[var(--card-bg)] px-4 py-2 text-sm text-black/80 transition hover:bg-[var(--accent-yellow)]"
           >
             Refresh
           </button>
@@ -93,7 +93,7 @@ export default function NotificationsCenter() {
             type="button"
             onClick={() => void markAllRead()}
             disabled={markingRead || unreadCount === 0}
-            className="rounded-full bg-fuchsia-500 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="neo-btn rounded-full px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
           >
             Mark all read
           </button>
@@ -103,31 +103,17 @@ export default function NotificationsCenter() {
       {loading ? <p className="text-sm text-white/60">Loading notifications...</p> : null}
 
       {!loading && !hasNotifications ? (
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-white/70 shadow-[0_20px_80px_rgba(0,0,0,0.22)]">
-          No notifications yet. Reactions and comments on your posts will appear here.
-        </div>
+        <div className="neo-card p-6 text-black/70">No notifications yet. Reactions and comments on your posts will appear here.</div>
       ) : null}
 
       <div className="space-y-3">
         {notifications.map((notification) => (
-          <article
-            key={notification._id}
-            className={`rounded-[24px] border p-5 shadow-[0_20px_60px_rgba(0,0,0,0.2)] ${
-              notification.isRead
-                ? "border-white/10 bg-white/5 text-white/70"
-                : "border-fuchsia-300/35 bg-fuchsia-500/10 text-white"
-            }`}
-          >
+          <article key={notification._id} className={`p-5 rounded-md border-2 ${notification.isRead ? 'border-black bg-[var(--card-bg)] text-black/80' : 'border-black bg-[var(--accent-yellow)] text-black'}`}>
             <p className="text-sm font-medium">{notificationMessage[notification.type]}</p>
-            <p className="mt-2 text-sm text-white/70">
-              “{notification.postSnippet || "Post update"}
-              {notification.postSnippet.length >= 40 ? "..." : ""}”
-            </p>
+            <p className="mt-2 text-sm text-black/70">“{notification.postSnippet || "Post update"}{notification.postSnippet.length >= 40 ? "..." : ""}”</p>
             <div className="mt-3 flex items-center justify-between gap-3">
-              <p className="text-xs text-white/45">{new Date(notification.createdAt).toLocaleString()}</p>
-              <Link href={`/post/${notification.postId}`} className="text-sm font-medium text-fuchsia-200 hover:text-fuchsia-100">
-                View post →
-              </Link>
+              <p className="text-xs text-black/50">{new Date(notification.createdAt).toLocaleString()}</p>
+              <Link href={`/post/${notification.postId}`} className="text-sm font-medium text-[var(--accent-orange)] hover:underline">View post →</Link>
             </div>
           </article>
         ))}

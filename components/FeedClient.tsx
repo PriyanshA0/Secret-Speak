@@ -43,12 +43,12 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
 
   return (
     <section className="space-y-5">
-      <div className="rounded-[28px] border border-white/10 bg-[#121220]/90 p-5 text-white shadow-[0_20px_80px_rgba(0,0,0,0.28)]">
+      <div className="neo-card p-5 text-black hard-shadow">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-white/40">University feed</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Choose your campus</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
+            <p className="text-xs uppercase tracking-[0.28em] text-black/60">University feed</p>
+            <h2 className="mt-2 text-2xl font-semibold text-black">Choose your campus</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/70">
               Posts are isolated by university so students only see their own campus conversations.
             </p>
           </div>
@@ -56,8 +56,8 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
             <button
               type="button"
               onClick={() => refresh("latest", university)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                sort === "latest" ? "bg-fuchsia-400 text-black" : "bg-white/8 text-white/70 hover:bg-white/12"
+              className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition ${
+                sort === "latest" ? "border-black bg-[var(--accent-orange)] text-black" : "border-black bg-[var(--card-bg)] text-black/80 hover:bg-[var(--accent-yellow)]"
               }`}
             >
               Latest
@@ -65,8 +65,8 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
             <button
               type="button"
               onClick={() => refresh("trending", university)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                sort === "trending" ? "bg-fuchsia-400 text-black" : "bg-white/8 text-white/70 hover:bg-white/12"
+              className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition ${
+                sort === "trending" ? "border-black bg-[var(--accent-orange)] text-black" : "border-black bg-[var(--card-bg)] text-black/80 hover:bg-[var(--accent-yellow)]"
               }`}
             >
               Trending
@@ -78,9 +78,9 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
           <UniversitySelector value={university} onChange={(nextUniversity) => refresh(sort, nextUniversity)} />
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/45">
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-black/60">
           {UNIVERSITY_OPTIONS.slice(0, 4).map((item) => (
-            <span key={item} className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+            <span key={item} className="rounded-full border-2 border-black bg-[var(--accent-yellow)] px-3 py-1 text-black">
               {item}
             </span>
           ))}
@@ -88,7 +88,7 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
       </div>
 
       {posts.length === 0 ? (
-        <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 text-center text-white/60">
+        <div className="neo-card p-8 text-center text-black/70">
           No posts yet for this campus. Be the first to start the conversation.
         </div>
       ) : null}
@@ -99,7 +99,7 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
         ))}
       </div>
 
-      {loading ? <p className="text-center text-sm text-white/45">Loading campus feed...</p> : null}
+      {loading ? <p className="text-center text-sm text-black/60">Loading campus feed...</p> : null}
     </section>
   );
 }

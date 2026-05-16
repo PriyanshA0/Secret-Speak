@@ -38,12 +38,12 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
 
   return (
     <section className="space-y-4">
-      <div className="rounded-xl border border-white/20 bg-white/80 p-4">
+      <div className="neo-card p-4 hard-shadow">
         <textarea
           value={content}
           onChange={(event) => setContent(event.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-slate-200 p-3 text-sm outline-none ring-slate-300 focus:ring"
+          className="w-full rounded-md border-2 border-black p-3 text-sm outline-none"
           placeholder="Drop an anonymous comment..."
         />
         <div className="mt-3 flex justify-end">
@@ -51,7 +51,7 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
             type="button"
             onClick={submitComment}
             disabled={submitting}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+            className="neo-btn px-4 py-2 text-sm font-medium disabled:opacity-60"
           >
             Comment
           </button>
@@ -60,9 +60,9 @@ export default function CommentSection({ postId, initialComments }: CommentSecti
 
       <div className="space-y-3">
         {comments.map((comment) => (
-          <article key={comment._id} className="rounded-xl border border-white/20 bg-white/80 p-4">
-            <p className="text-sm text-slate-700">{comment.content}</p>
-            <p className="mt-2 text-xs text-slate-500">
+          <article key={comment._id} className="neo-card p-4">
+            <p className="text-sm text-black">{comment.content}</p>
+            <p className="mt-2 text-xs text-black/50">
               @{comment.anonymousHandle} • {new Date(comment.createdAt).toLocaleString()}
             </p>
           </article>

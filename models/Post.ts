@@ -12,6 +12,8 @@ const postSchema = new Schema(
     title: { type: String, default: "" },
     content: { type: String, required: true },
     college: { type: String, required: true, index: true },
+    customUniversity: { type: String, default: "" },
+    isOtherUniversity: { type: Boolean, default: false, index: true },
     pollOptions: [
       {
         label: { type: String, required: true },

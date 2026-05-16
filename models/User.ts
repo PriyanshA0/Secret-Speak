@@ -6,6 +6,8 @@ const userSchema = new Schema(
     anonymousHandle: { type: String, required: true, index: true },
     college: { type: String, default: "" },
     university: { type: String, default: "" },
+    customUniversity: { type: String, default: "" },
+    isOtherUniversity: { type: Boolean, default: false },
     phone: { type: String, default: "" },
     profileVisible: { type: Boolean, default: false },
     onboardingComplete: { type: Boolean, default: false },

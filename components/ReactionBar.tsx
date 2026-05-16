@@ -29,9 +29,10 @@ export default function ReactionBar({ postId, reactions }: ReactionBarProps) {
           type="button"
           onClick={() => onReact(reaction.value)}
           disabled={isPending}
-          className="rounded-full border border-white/12 bg-white/8 px-3 py-1 text-sm text-white/85 transition hover:bg-white/14 disabled:opacity-60"
+          className="neo-btn flex items-center gap-2 disabled:opacity-60"
         >
-          <span>{reaction.icon}</span> <span>{reactions[reaction.value]}</span>
+          <span>{reaction.icon}</span>
+          <span className="text-sm">{reactions[reaction.value]}</span>
         </button>
       ))}
     </div>

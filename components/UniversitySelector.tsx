@@ -16,10 +16,10 @@ export default function UniversitySelector({ value, onChange }: UniversitySelect
             key={university}
             type="button"
             onClick={() => onChange(university)}
-            className={`rounded-full border px-4 py-2 text-sm transition ${
+            className={`rounded-full border-2 px-4 py-2 text-sm transition ${
               value === university
-                ? "border-fuchsia-300 bg-fuchsia-400/20 text-white"
-                : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                ? "border-black bg-[var(--accent-yellow)] text-black"
+                : "border-black bg-[var(--card-bg)] text-black/70 hover:bg-[var(--accent-yellow)] hover:text-black"
             }`}
           >
             {university}
@@ -31,7 +31,7 @@ export default function UniversitySelector({ value, onChange }: UniversitySelect
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Search or type your university"
-        className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-fuchsia-300/40"
+        className="w-full rounded-md border-2 border-black bg-[var(--card-bg)] px-4 py-3 text-black outline-none placeholder:text-black/40 focus:border-[var(--accent-orange)]"
       />
       <datalist id="university-options">
         {UNIVERSITY_OPTIONS.map((university) => (

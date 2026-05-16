@@ -30,7 +30,7 @@ export default function ProfileVisibility({ initialValue }: ProfileVisibilityPro
       type="button"
       onClick={onToggle}
       disabled={loading}
-      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700"
+      className="neo-btn rounded-md px-4 py-2 text-sm"
     >
       Profile visibility: {value ? "Visible" : "Hidden"}
     </button>
