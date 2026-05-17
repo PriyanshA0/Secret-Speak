@@ -41,14 +41,6 @@ const notificationSchema = new Schema<NotificationAttributes>(
 notificationSchema.index({ recipientId: 1, isRead: 1 });
 notificationSchema.index({ recipientId: 1, createdAt: -1 });
 
-notificationSchema.pre("validate", function syncNotificationMessage(next) {
-  if (!this.message && this.postSnippet) {
-    this.message = this.postSnippet;
-  }
-
-  next();
-});
-
 export type NotificationDocument = HydratedDocument<NotificationAttributes>;
 
 const NotificationModel = models.Notification || model<NotificationAttributes>("Notification", notificationSchema);

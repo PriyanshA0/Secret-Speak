@@ -4,10 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import BookmarkModel from "@/models/Bookmark";
 import PostModel from "@/models/Post";
 
-export async function POST(request: Request, { params }: { params: { userId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const me = await requireCurrentUser();
-    const { userId } = params; // unused but kept for route compat
+    const { userId } = await params; // unused but kept for route compat
     const body = await request.json();
     const postId = body.postId;
     if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });

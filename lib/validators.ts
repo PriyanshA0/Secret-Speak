@@ -43,7 +43,8 @@ export const createCommentSchema = z.object({
 
 export const reactionSchema = z.object({
   emoji: z.enum(["fire", "heart", "laugh", "wow", "sad", "angry"]),
-  targetType: z.enum(["post", "comment"]),
+  targetType: z.enum(["post", "comment"]).optional().default("post"),
+  targetId: z.string().optional(),
 });
 
 export const reportSchema = z.object({
@@ -61,6 +62,9 @@ export const onboardingSchema = z.object({
       message: "University is not in the approved list",
     }),
   displayName: z.string().trim().max(160).optional(),
+  college: z.string().optional(),
+  phone: z.string().optional(),
+  profileVisible: z.boolean().optional(),
 });
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;

@@ -4,10 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import FollowModel from "@/models/Follow";
 import UserModel from "@/models/User";
 
-export async function POST(request: Request, { params }: { params: { userId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const me = await requireCurrentUser();
-    const targetClerkId = params.userId;
+    const { userId: targetClerkId } = await params;
     await connectToDatabase();
 
     const target = await UserModel.findById(targetClerkId) || await UserModel.findOne({ clerkId: targetClerkId });

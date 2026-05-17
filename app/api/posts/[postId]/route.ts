@@ -4,10 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import PostModel from "@/models/Post";
 import UserModel from "@/models/User";
 
-export async function GET(request: Request, { params }: { params: { postId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ postId: string }> }) {
   try {
+    const { postId } = await params;
     await connectToDatabase();
-    const { postId } = params;
     const post = await PostModel.findById(postId).populate("authorId", "anonymousHandle").lean();
     if (!post || post.isRemoved) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -20,16 +20,15 @@ export async function GET(request: Request, { params }: { params: { postId: stri
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { postId: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ postId: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const { postId } = await params;
     await connectToDatabase();
     const user = await UserModel.findOne({ clerkId: userId });
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { postId } = params;
     const post = await PostModel.findById(postId);
     if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

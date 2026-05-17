@@ -25,35 +25,12 @@ const reactionSchema = new Schema<ReactionAttributes>(
       enum: REACTION_EMOJIS,
       required: true,
     },
-    post: { type: Schema.Types.ObjectId, ref: "Post" },
-    user: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true, minimize: false },
 );
 
 reactionSchema.index({ userId: 1, targetType: 1, targetId: 1 }, { unique: true });
 reactionSchema.index({ targetId: 1, targetType: 1 });
-
-reactionSchema.pre("validate", function syncReactionShape(next) {
-  if (!this.userId && this.user) {
-    this.userId = this.user;
-  }
-
-  if (!this.targetId && this.post) {
-    this.targetId = this.post;
-    this.targetType = "post";
-  }
-
-  if (!this.post && this.targetType === "post" && this.targetId) {
-    this.post = this.targetId;
-  }
-
-  if (!this.user && this.userId) {
-    this.user = this.userId;
-  }
-
-  next();
-});
 
 export type ReactionDocument = HydratedDocument<ReactionAttributes>;
 

@@ -4,10 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb";
 import PollVoteModel from "@/models/PollVote";
 import PostModel from "@/models/Post";
 
-export async function POST(request: Request, { params }: { params: { postId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ postId: string }> }) {
   try {
     const user = await requireCurrentUser();
-    const { postId } = params;
+    const { postId } = await params;
     const body = await request.json();
     const optionIds: string[] = Array.isArray(body.optionIds) ? body.optionIds : [];
     if (optionIds.length === 0) {

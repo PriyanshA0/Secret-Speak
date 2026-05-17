@@ -166,57 +166,6 @@ postSchema.index({ university: 1, trendingScore: -1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ content: "text" });
 
-postSchema.pre("validate", async function syncPostShape(next) {
-  if (this.type === "hot_take") {
-    this.type = "hottake";
-  }
-
-  if ((!this.anonymousHandle || !this.university) && (this.authorId || this.userId)) {
-    const author = await UserModel.findById(this.authorId ?? this.userId).lean();
-    if (author) {
-      if (!this.anonymousHandle) {
-        this.anonymousHandle = author.anonymousHandle;
-      }
-      if (!this.university) {
-        this.university = author.university;
-      }
-      if (!this.college) {
-        this.college = author.universityDisplayName || author.university;
-      }
-    }
-  }
-
-  if (this.college && !this.university) {
-    this.university = this.college;
-  }
-
-  if (this.text && !this.content) {
-    this.content = this.text;
-  }
-
-  if (this.reactions && !this.reactionCounts) {
-    this.reactionCounts = {
-      fire: this.reactions.fire ?? 0,
-      heart: this.reactions.heart ?? 0,
-      laugh: this.reactions.laugh ?? 0,
-      wow: 0,
-      sad: 0,
-      angry: 0,
-    };
-  }
-
-  if (!this.reactions && this.reactionCounts) {
-    this.reactions = {
-      fire: this.reactionCounts.fire ?? 0,
-      heart: this.reactionCounts.heart ?? 0,
-      laugh: this.reactionCounts.laugh ?? 0,
-      skull: this.reactionCounts.wow ?? 0,
-    };
-  }
-
-  next();
-});
-
 export type PostDocument = HydratedDocument<PostAttributes>;
 
 const PostModel = models.Post || model<PostAttributes>("Post", postSchema);

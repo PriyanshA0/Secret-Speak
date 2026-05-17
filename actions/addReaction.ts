@@ -14,8 +14,8 @@ export async function addReaction(postId: string, payload: unknown) {
 
   await connectToDatabase();
 
-  const targetType = parsed.targetType || "post";
-  const targetId = targetType === "post" ? postId : parsed.targetId || postId;
+  const targetType = "post";
+  const targetId = postId;
 
   const existing = await ReactionModel.findOne({ userId: user._id, targetType, targetId });
 

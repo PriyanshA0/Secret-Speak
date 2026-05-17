@@ -58,22 +58,6 @@ const userSchema = new Schema<UserAttributes>(
 
 userSchema.index({ university: 1, anonymousHandle: 1 });
 
-userSchema.pre("save", function syncLegacyProfileVisibility(next) {
-  if (this.profileVisible === true && this.profileVisibility === "campus-only") {
-    this.profileVisibility = "public";
-  }
-
-  if (this.onboardingComplete === true && this.isOnboarded === false) {
-    this.isOnboarded = true;
-  }
-
-  if (this.isOnboarded === true && this.onboardingComplete === false) {
-    this.onboardingComplete = true;
-  }
-
-  next();
-});
-
 export type UserDocument = HydratedDocument<UserAttributes>;
 
 const UserModel = models.User || model<UserAttributes>("User", userSchema);

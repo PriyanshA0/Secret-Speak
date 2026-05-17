@@ -50,43 +50,12 @@ const commentSchema = new Schema<CommentAttributes>(
     replyCount: { type: Number, default: 0, min: 0 },
     reactionCounts: { type: reactionCountsSchema, default: () => ({}) },
     isRemoved: { type: Boolean, default: false, index: true },
-    post: { type: Schema.Types.ObjectId, ref: "Post" },
-    author: { type: Schema.Types.ObjectId, ref: "User" },
-    parentComment: { type: Schema.Types.ObjectId, ref: "Comment", default: null },
   },
   { timestamps: true, minimize: false },
 );
 
 commentSchema.index({ postId: 1, createdAt: 1 });
 commentSchema.index({ parentCommentId: 1 });
-
-commentSchema.pre("validate", async function syncCommentShape(next) {
-  if (!this.postId && this.post) {
-    this.postId = this.post;
-  }
-
-  if (!this.authorId && this.author) {
-    this.authorId = this.author;
-  }
-
-  if (this.parentComment && !this.parentCommentId) {
-    this.parentCommentId = this.parentComment;
-  }
-
-  if ((!this.anonymousHandle || !this.university) && this.authorId) {
-    const author = await UserModel.findById(this.authorId).lean();
-    if (author) {
-      if (!this.anonymousHandle) {
-        this.anonymousHandle = author.anonymousHandle;
-      }
-      if (!this.university) {
-        this.university = author.university;
-      }
-    }
-  }
-
-  next();
-});
 
 export type CommentDocument = HydratedDocument<CommentAttributes>;
 
