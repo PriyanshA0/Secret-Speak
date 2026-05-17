@@ -35,9 +35,17 @@ export default function OnboardingPage() {
           profileVisible,
         }),
       });
-      if (res.ok) {
-        router.push("/");
+      
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(`Onboarding failed: ${data?.error || data?.details || "Unknown error"}`);
+        return;
       }
+      
+      alert("Welcome to SecretSpeak! Redirecting...");
+      router.push("/");
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Failed to complete onboarding"}`);
     } finally {
       setSaving(false);
     }

@@ -40,13 +40,16 @@ export default function CreatePostModal() {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(data?.error || "Failed to create post");
+        alert(`${data?.error || "Failed to create post"} ${data?.details ? `(${data.details})` : ""}`);
         return;
       }
 
       // success
       setTitle("");
       setContent("");
+      alert("Post created anonymously!");
+    } catch (error) {
+      alert(`Error: ${error instanceof Error ? error.message : "Failed to create post"}`);
     } finally {
       setSubmitting(false);
     }
