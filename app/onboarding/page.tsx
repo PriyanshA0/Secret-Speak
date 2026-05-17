@@ -70,7 +70,7 @@ export default function OnboardingPage() {
               </datalist>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {UNIVERSITY_OPTIONS.slice(0, 7).map((option) => (
+                {UNIVERSITY_OPTIONS.slice(0, 12).map((option) => (
                   <button
                     key={option}
                     type="button"

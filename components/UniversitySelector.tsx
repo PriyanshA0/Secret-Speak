@@ -11,7 +11,7 @@ export default function UniversitySelector({ value, onChange }: UniversitySelect
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {UNIVERSITY_OPTIONS.slice(0, 6).map((university) => (
+        {UNIVERSITY_OPTIONS.slice(0, 12).map((university) => (
           <button
             key={university}
             type="button"

@@ -21,7 +21,7 @@ export default function CreatePostModal() {
   async function onSubmit() {
     setSubmitting(true);
     try {
-      await fetch("/api/posts", {
+      const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -37,6 +37,14 @@ export default function CreatePostModal() {
               : undefined,
         }),
       });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data?.error || "Failed to create post");
+        return;
+      }
+
+      // success
       setTitle("");
       setContent("");
     } finally {
