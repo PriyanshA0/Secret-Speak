@@ -1,22 +1,81 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, type HydratedDocument } from "mongoose";
 
-const userSchema = new Schema(
+export const PROFILE_VISIBILITY_VALUES = ["public", "campus-only", "private"] as const;
+
+export type ProfileVisibility = (typeof PROFILE_VISIBILITY_VALUES)[number];
+
+export interface UserAttributes {
+  clerkId: string;
+  anonymousHandle: string;
+  university: string;
+  universityDisplayName: string;
+  bio: string;
+  postCount: number;
+  followerCount: number;
+  followingCount: number;
+  isOnboarded: boolean;
+  isBanned: boolean;
+  banReason?: string;
+  profileVisibility: ProfileVisibility;
+  college?: string;
+  customUniversity?: string;
+  isOtherUniversity?: boolean;
+  phone?: string;
+  profileVisible?: boolean;
+  onboardingComplete?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const userSchema = new Schema<UserAttributes>(
   {
-    clerkId: { type: String, required: true, unique: true, index: true },
-    anonymousHandle: { type: String, required: true, index: true },
-    college: { type: String, default: "" },
-    university: { type: String, default: "" },
-    customUniversity: { type: String, default: "" },
+    clerkId: { type: String, required: true, unique: true, index: true, trim: true },
+    anonymousHandle: { type: String, required: true, unique: true, index: true, trim: true },
+    university: { type: String, required: true, index: true, trim: true },
+    universityDisplayName: { type: String, default: "", trim: true },
+    bio: { type: String, default: "", maxlength: 160, trim: true },
+    postCount: { type: Number, default: 0, min: 0 },
+    followerCount: { type: Number, default: 0, min: 0 },
+    followingCount: { type: Number, default: 0, min: 0 },
+    isOnboarded: { type: Boolean, default: false, index: true },
+    isBanned: { type: Boolean, default: false, index: true },
+    banReason: { type: String, default: "", trim: true },
+    profileVisibility: {
+      type: String,
+      enum: PROFILE_VISIBILITY_VALUES,
+      default: "campus-only",
+      index: true,
+    },
+    college: { type: String, default: "", trim: true },
+    customUniversity: { type: String, default: "", trim: true },
     isOtherUniversity: { type: Boolean, default: false },
-    phone: { type: String, default: "" },
+    phone: { type: String, default: "", trim: true },
     profileVisible: { type: Boolean, default: false },
-    onboardingComplete: { type: Boolean, default: false },
+    onboardingComplete: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true },
+  { timestamps: true, minimize: false },
 );
 
-export type UserDocument = InferSchemaType<typeof userSchema>;
+userSchema.index({ university: 1, anonymousHandle: 1 });
 
-const UserModel = models.User || model("User", userSchema);
+userSchema.pre("save", function syncLegacyProfileVisibility(next) {
+  if (this.profileVisible === true && this.profileVisibility === "campus-only") {
+    this.profileVisibility = "public";
+  }
+
+  if (this.onboardingComplete === true && this.isOnboarded === false) {
+    this.isOnboarded = true;
+  }
+
+  if (this.isOnboarded === true && this.onboardingComplete === false) {
+    this.onboardingComplete = true;
+  }
+
+  next();
+});
+
+export type UserDocument = HydratedDocument<UserAttributes>;
+
+const UserModel = models.User || model<UserAttributes>("User", userSchema);
 
 export default UserModel;

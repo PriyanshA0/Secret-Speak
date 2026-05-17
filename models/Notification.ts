@@ -1,24 +1,56 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, Types, type HydratedDocument } from "mongoose";
 
-const notificationSchema = new Schema(
+export const NOTIFICATION_TYPES = ["comment", "reply", "reaction", "mention", "poll-ended", "trending"] as const;
+
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export interface NotificationAttributes {
+  recipientId?: Types.ObjectId;
+  actorHandle: string;
+  type: NotificationType;
+  postId?: Types.ObjectId;
+  commentId?: Types.ObjectId;
+  message: string;
+  isRead: boolean;
+  recipientUserId?: string;
+  postSnippet?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const notificationSchema = new Schema<NotificationAttributes>(
   {
-    recipientUserId: { type: String, required: true, index: true },
+    recipientId: { type: Schema.Types.ObjectId, ref: "User", required: false, index: true },
+    actorHandle: { type: String, required: true, default: "", trim: true, index: true },
     type: {
       type: String,
-      enum: ["reaction", "comment", "trending"],
+      enum: NOTIFICATION_TYPES,
       required: true,
+      index: true,
     },
-    postId: { type: String, required: true, index: true },
-    postSnippet: { type: String, default: "" },
+    postId: { type: Schema.Types.ObjectId, ref: "Post", required: false, index: true },
+    commentId: { type: Schema.Types.ObjectId, ref: "Comment", required: false, index: true },
+    message: { type: String, required: true, default: "", trim: true },
     isRead: { type: Boolean, default: false, index: true },
+    recipientUserId: { type: String, default: "", trim: true },
+    postSnippet: { type: String, default: "", trim: true },
   },
-  { timestamps: true },
+  { timestamps: true, minimize: false },
 );
 
-notificationSchema.index({ recipientUserId: 1, createdAt: -1 });
+notificationSchema.index({ recipientId: 1, isRead: 1 });
+notificationSchema.index({ recipientId: 1, createdAt: -1 });
 
-export type NotificationDocument = InferSchemaType<typeof notificationSchema>;
+notificationSchema.pre("validate", function syncNotificationMessage(next) {
+  if (!this.message && this.postSnippet) {
+    this.message = this.postSnippet;
+  }
 
-const NotificationModel = models.Notification || model("Notification", notificationSchema);
+  next();
+});
+
+export type NotificationDocument = HydratedDocument<NotificationAttributes>;
+
+const NotificationModel = models.Notification || model<NotificationAttributes>("Notification", notificationSchema);
 
 export default NotificationModel;

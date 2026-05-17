@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/mongodb";
-import { addReactionSchema } from "@/lib/validators";
+import { reactionSchema } from "@/lib/validators";
 import { requireCurrentUser } from "@/lib/auth";
 import ReactionModel from "@/models/Reaction";
 import PostModel from "@/models/Post";
@@ -10,29 +10,42 @@ import NotificationModel from "@/models/Notification";
 
 export async function addReaction(postId: string, payload: unknown) {
   const user = await requireCurrentUser();
-  const parsed = addReactionSchema.parse(payload);
+  const parsed = reactionSchema.parse(payload);
 
   await connectToDatabase();
 
-  const existing = await ReactionModel.findOne({ post: postId, user: user._id, emoji: parsed.emoji });
+  const targetType = parsed.targetType || "post";
+  const targetId = targetType === "post" ? postId : parsed.targetId || postId;
 
-  if (!existing) {
-    await ReactionModel.create({ post: postId, user: user._id, emoji: parsed.emoji });
-    await PostModel.updateOne({ _id: postId }, { $inc: { [`reactions.${parsed.emoji}`]: 1 } });
+  const existing = await ReactionModel.findOne({ userId: user._id, targetType, targetId });
 
-    const post = await PostModel.findById(postId)
-      .populate("author", "clerkId")
-      .select("author content")
-      .lean();
+  if (existing && existing.emoji === parsed.emoji) {
+    await existing.deleteOne();
+    if (targetType === "post") {
+      await PostModel.updateOne({ _id: targetId }, { $inc: { [`reactionCounts.${parsed.emoji}`]: -1 } } as any);
+    }
+  } else if (existing && existing.emoji !== parsed.emoji) {
+    const prev = existing.emoji;
+    existing.emoji = parsed.emoji;
+    await existing.save();
+    if (targetType === "post") {
+      await PostModel.updateOne({ _id: targetId }, { $inc: { [`reactionCounts.${parsed.emoji}`]: 1, [`reactionCounts.${prev}`]: -1 } } as any);
+    }
+  } else {
+    await ReactionModel.create({ userId: user._id, targetType, targetId, emoji: parsed.emoji });
+    if (targetType === "post") {
+      await PostModel.updateOne({ _id: targetId }, { $inc: { [`reactionCounts.${parsed.emoji}`]: 1 } } as any);
 
-    const author = (post?.author as { clerkId?: string } | undefined)?.clerkId;
-    if (author && author !== user.clerkId) {
-      await NotificationModel.create({
-        recipientUserId: author,
-        type: "reaction",
-        postId,
-        postSnippet: (post?.content ?? "").slice(0, 40),
-      });
+      const post = await PostModel.findById(targetId).populate("authorId", "clerkId").select("authorId content").lean();
+      const author = (post?.authorId as { clerkId?: string } | undefined)?.clerkId;
+      if (author && author !== user.clerkId) {
+        await NotificationModel.create({
+          recipientUserId: author,
+          type: "reaction",
+          postId: targetId,
+          postSnippet: (post?.content ?? "").slice(0, 40),
+        });
+      }
     }
   }
 

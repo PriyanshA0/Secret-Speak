@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "@/lib/mongodb";
-import { addCommentSchema } from "@/lib/validators";
+import { createCommentSchema } from "@/lib/validators";
 import { sanitizeAndFilterText } from "@/lib/post-helpers";
 import { requireCurrentUser } from "@/lib/auth";
 import CommentModel from "@/models/Comment";
@@ -11,25 +11,22 @@ import NotificationModel from "@/models/Notification";
 
 export async function addComment(postId: string, payload: unknown) {
   const user = await requireCurrentUser();
-  const parsed = addCommentSchema.parse(payload);
+  const parsed = createCommentSchema.parse(payload);
 
   await connectToDatabase();
 
   const comment = await CommentModel.create({
-    post: postId,
-    author: user._id,
+    postId,
+    authorId: user._id,
     content: sanitizeAndFilterText(parsed.content),
-    parentComment: parsed.parentCommentId ?? null,
+    parentCommentId: parsed.parentCommentId ?? null,
   });
 
   await PostModel.updateOne({ _id: postId }, { $inc: { commentCount: 1 } });
 
-  const post = await PostModel.findById(postId)
-    .populate("author", "clerkId")
-    .select("author content")
-    .lean();
+  const post = await PostModel.findById(postId).populate("authorId", "clerkId").select("authorId content").lean();
 
-  const author = (post?.author as { clerkId?: string } | undefined)?.clerkId;
+  const author = (post?.authorId as { clerkId?: string } | undefined)?.clerkId;
   if (author && author !== user.clerkId) {
     await NotificationModel.create({
       recipientUserId: author,

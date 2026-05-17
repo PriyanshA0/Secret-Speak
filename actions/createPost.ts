@@ -14,22 +14,36 @@ export async function createPost(payload: unknown) {
   await connectToDatabase();
 
   const content = sanitizeAndFilterText(parsed.content);
-  const title = parsed.title ? sanitizeAndFilterText(parsed.title) : "";
 
-  await PostModel.create({
-    author: user._id,
-    userId: user._id,
-    type: parsed.type,
-    title,
+  const doc: any = {
+    authorId: user._id,
+    anonymousHandle: user.anonymousHandle,
+    university: user.university,
     content,
     text: content,
-    college: user.university || user.college,
-    commentsCount: 0,
-    pollOptions:
-      parsed.type === "poll" && parsed.pollOptions
-        ? parsed.pollOptions.map((label) => ({ label: sanitizeAndFilterText(label), votes: 0 }))
-        : [],
-  });
+    type: parsed.type,
+    tags: parsed.tags ?? [],
+    commentCount: 0,
+    shareCount: 0,
+    bookmarkCount: 0,
+    viewCount: 0,
+    isPinned: false,
+    isRemoved: false,
+    trendingScore: 0,
+  };
+
+  if (parsed.type === "poll" && parsed.poll) {
+    const endsAt = new Date(Date.now() + (parsed.poll.durationHours || 24) * 60 * 60 * 1000);
+    doc.poll = {
+      question: sanitizeAndFilterText(parsed.poll.question),
+      options: parsed.poll.options.map((o: any, idx: number) => ({ id: String(idx + 1), text: sanitizeAndFilterText(o.text), voteCount: 0 })),
+      totalVotes: 0,
+      endsAt,
+      allowMultiple: !!parsed.poll.allowMultiple,
+    };
+  }
+
+  await PostModel.create(doc);
 
   revalidatePath("/");
   revalidatePath("/trending");

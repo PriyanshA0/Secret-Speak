@@ -1,18 +1,26 @@
-import { model, models, Schema, type InferSchemaType } from "mongoose";
+import { model, models, Schema, Types, type HydratedDocument } from "mongoose";
 
-const pollVoteSchema = new Schema(
+export interface PollVoteAttributes {
+  userId: Types.ObjectId;
+  postId: Types.ObjectId;
+  optionIds: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const pollVoteSchema = new Schema<PollVoteAttributes>(
   {
-    post: { type: Schema.Types.ObjectId, ref: "Post", required: true, index: true },
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    optionIndex: { type: Number, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    postId: { type: Schema.Types.ObjectId, ref: "Post", required: true, index: true },
+    optionIds: { type: [String], default: [] },
   },
-  { timestamps: true },
+  { timestamps: true, minimize: false },
 );
 
-pollVoteSchema.index({ post: 1, user: 1 }, { unique: true });
+pollVoteSchema.index({ userId: 1, postId: 1 }, { unique: true });
 
-export type PollVoteDocument = InferSchemaType<typeof pollVoteSchema>;
+export type PollVoteDocument = HydratedDocument<PollVoteAttributes>;
 
-const PollVoteModel = models.PollVote || model("PollVote", pollVoteSchema);
+const PollVoteModel = models.PollVote || model<PollVoteAttributes>("PollVote", pollVoteSchema);
 
 export default PollVoteModel;
