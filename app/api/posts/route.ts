@@ -17,15 +17,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  console.log("[POSTS] POST /api/posts called");
-  const { userId } = await auth();
-  console.log("[POSTS] auth() userId:", userId);
-  if (!userId) {
-    console.log("[POSTS] No userId from auth, returning 401");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
+    console.log("[POSTS] POST /api/posts called");
+    const { userId } = await auth();
+    console.log("[POSTS] auth() userId:", userId);
+    if (!userId) {
+      console.log("[POSTS] No userId from auth, returning 401");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     console.log("[POSTS] Connecting to database...");
     await connectToDatabase();
     console.log("[POSTS] DB connected");

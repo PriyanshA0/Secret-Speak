@@ -6,18 +6,26 @@ import { makeAnonymousHandle } from "@/lib/utils";
 import UserModel from "@/models/User";
 
 export async function POST(request: Request) {
-  console.log("[ONBOARD] POST /api/users/onboard called");
-  const { userId } = await auth();
-  console.log("[ONBOARD] auth() userId:", userId);
-  if (!userId) {
-    console.log("[ONBOARD] No userId from auth, returning 401");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
+    console.log("[ONBOARD] POST /api/users/onboard called");
+    const { userId } = await auth();
+    console.log("[ONBOARD] auth() userId:", userId);
+    if (!userId) {
+      console.log("[ONBOARD] No userId from auth, returning 401");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     console.log("[ONBOARD] Parsed body:", body);
-    const parsed = onboardingSchema.partial().parse(body);
+    const parsedResult = onboardingSchema.partial().safeParse(body);
+    if (!parsedResult.success) {
+      console.log("[ONBOARD] Validation failed:", parsedResult.error.flatten());
+      return NextResponse.json(
+        { error: "Invalid onboarding data", details: parsedResult.error.flatten() },
+        { status: 400 },
+      );
+    }
+    const parsed = parsedResult.data;
     console.log("[ONBOARD] Schema parsed successfully:", parsed);
 
     console.log("[ONBOARD] Connecting to database...");
