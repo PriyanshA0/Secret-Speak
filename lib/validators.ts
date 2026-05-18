@@ -13,12 +13,14 @@ const nonEmptyTrimmedString = (min = 1, max = 500) =>
 export const createPostSchema = z
   .object({
     content: nonEmptyTrimmedString(1, 500),
-    type: z.enum(["confession", "question", "hottake", "poll", "rant"]),
+    type: z.enum(["confession", "question", "hottake", "hot_take", "poll", "rant"]),
+    title: z.string().trim().max(120).optional(),
     tags: z
       .array(z.string().trim().min(1).max(30))
       .max(5)
       .optional()
       .transform((v) => v?.map((t) => t.replace(/^#/, "")).slice(0, 5)),
+    pollOptions: z.array(z.string().trim().min(1).max(100)).min(2).max(4).optional(),
     poll: z
       .object({
         question: z.string().trim().min(1).max(200),
@@ -30,7 +32,7 @@ export const createPostSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.type === "poll") {
-      if (!data.poll) {
+      if (!data.poll && !data.pollOptions) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Poll data required for type 'poll'" });
       }
     }

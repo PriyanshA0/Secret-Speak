@@ -15,13 +15,16 @@ export async function createPost(payload: unknown) {
 
   const content = sanitizeAndFilterText(parsed.content);
 
+  const normalizedType = parsed.type === "hot_take" ? "hottake" : parsed.type;
+
   const doc: any = {
     authorId: user._id,
     anonymousHandle: user.anonymousHandle,
     university: user.university,
     content,
     text: content,
-    type: parsed.type,
+    type: normalizedType,
+    title: parsed.title ? sanitizeAndFilterText(parsed.title) : "",
     tags: parsed.tags ?? [],
     commentCount: 0,
     shareCount: 0,
@@ -32,14 +35,23 @@ export async function createPost(payload: unknown) {
     trendingScore: 0,
   };
 
-  if (parsed.type === "poll" && parsed.poll) {
-    const endsAt = new Date(Date.now() + (parsed.poll.durationHours || 24) * 60 * 60 * 1000);
+  if (parsed.type === "poll") {
+    const pollQuestion = parsed.poll?.question ?? parsed.title ?? "Poll";
+    const pollOptions = parsed.poll?.options?.map((o: any) => o.text) ?? parsed.pollOptions ?? [];
+    const durationHours = parsed.poll?.durationHours ?? 24;
+    const allowMultiple = parsed.poll?.allowMultiple ?? false;
+
+    const endsAt = new Date(Date.now() + durationHours * 60 * 60 * 1000);
     doc.poll = {
-      question: sanitizeAndFilterText(parsed.poll.question),
-      options: parsed.poll.options.map((o: any, idx: number) => ({ id: String(idx + 1), text: sanitizeAndFilterText(o.text), voteCount: 0 })),
+      question: sanitizeAndFilterText(pollQuestion),
+      options: pollOptions.map((optionText: string, idx: number) => ({
+        id: String(idx + 1),
+        text: sanitizeAndFilterText(optionText),
+        voteCount: 0,
+      })),
       totalVotes: 0,
       endsAt,
-      allowMultiple: !!parsed.poll.allowMultiple,
+      allowMultiple,
     };
   }
 

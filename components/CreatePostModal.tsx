@@ -96,7 +96,7 @@ export default function CreatePostModal() {
               onChange={(event) => setContent(event.target.value)}
               className="rounded-md border-2 border-black bg-[var(--card-bg)] px-4 py-4 text-black outline-none placeholder:text-black/40"
               placeholder="Tell it anonymously..."
-              maxLength={800}
+              maxLength={500}
             />
           </label>
 
