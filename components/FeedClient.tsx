@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import type { PostListItem } from "@/lib/types";
 import PostCard from "@/components/PostCard";
-import UniversitySelector from "@/components/UniversitySelector";
-import { UNIVERSITY_OPTIONS } from "@/lib/universities";
 
 interface FeedClientProps {
   initialPosts: PostListItem[];
@@ -15,7 +13,6 @@ interface FeedClientProps {
 export default function FeedClient({ initialPosts, defaultSort = "latest", initialUniversity = "" }: FeedClientProps) {
   const [posts, setPosts] = useState<PostListItem[]>(initialPosts);
   const [sort, setSort] = useState<"latest" | "trending">(defaultSort);
-  const [university, setUniversity] = useState(initialUniversity);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,16 +22,12 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
   async function refresh(nextSort: "latest" | "trending" = sort, nextUniversity = university) {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ sort: nextSort, page: "1" });
-      if (nextUniversity) {
-        params.set("college", nextUniversity);
-      }
+      const params = new URLSearchParams({ sort: nextSort });
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (res.ok) {
         const json = (await res.json()) as { posts: PostListItem[] };
         setPosts(json.posts);
         setSort(nextSort);
-        setUniversity(nextUniversity);
       }
     } finally {
       setLoading(false);
@@ -75,15 +68,7 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
         </div>
 
         <div className="mt-5">
-          <UniversitySelector value={university} onChange={(nextUniversity) => refresh(sort, nextUniversity)} />
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2 text-xs text-black/60">
-          {UNIVERSITY_OPTIONS.slice(0, 4).map((item) => (
-            <span key={item} className="rounded-full border-2 border-black bg-[var(--accent-yellow)] px-3 py-1 text-black">
-              {item}
-            </span>
-          ))}
+          <p className="text-sm text-black/70">Showing posts from all universities.</p>
         </div>
       </div>
 
