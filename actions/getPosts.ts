@@ -25,7 +25,7 @@ export async function getPosts(input: GetPostsInput = {}) {
       : { createdAt: -1 };
 
   const docs = await PostModel.find(query)
-    .populate("author", "anonymousHandle")
+    .populate("authorId", "anonymousHandle")
     .sort(sort)
     .skip(skip)
     .limit(limit)
@@ -39,7 +39,7 @@ export async function getPosts(input: GetPostsInput = {}) {
       title: doc.title,
       college: doc.college,
       createdAt: new Date(doc.createdAt),
-      author: { anonymousHandle: (doc.author as { anonymousHandle?: string } | undefined)?.anonymousHandle },
+      author: { anonymousHandle: (doc.authorId as { anonymousHandle?: string } | undefined)?.anonymousHandle },
       commentCount: doc.commentCount ?? (doc as { commentsCount?: number }).commentsCount,
       reactions: doc.reactions,
       pollOptions: doc.pollOptions,

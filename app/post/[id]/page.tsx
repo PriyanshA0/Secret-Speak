@@ -19,14 +19,14 @@ export default async function PostPage({ params }: PageProps) {
   const user = await getCurrentUser();
   const campus = user?.university || user?.college || "";
 
-  const post = await PostModel.findById(id).populate("author", "anonymousHandle").lean();
+  const post = await PostModel.findById(id).populate("authorId", "anonymousHandle").lean();
 
   if (!post) {
     notFound();
   }
 
   const rawComments = await CommentModel.find({ post: id })
-    .populate("author", "anonymousHandle")
+    .populate("authorId", "anonymousHandle")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -34,7 +34,7 @@ export default async function PostPage({ params }: PageProps) {
     _id: String(comment._id),
     postId: String(comment.post),
     content: comment.content,
-    anonymousHandle: (comment.author as { anonymousHandle?: string } | undefined)?.anonymousHandle ?? "anon",
+    anonymousHandle: (comment.authorId as { anonymousHandle?: string } | undefined)?.anonymousHandle ?? "anon",
     createdAt: new Date(comment.createdAt).toISOString(),
     parentCommentId: comment.parentComment ? String(comment.parentComment) : undefined,
   }));
@@ -49,7 +49,7 @@ export default async function PostPage({ params }: PageProps) {
           title: post.title,
           college: post.college,
           createdAt: new Date(post.createdAt),
-          author: { anonymousHandle: (post.author as { anonymousHandle?: string } | undefined)?.anonymousHandle },
+          author: { anonymousHandle: (post.authorId as { anonymousHandle?: string } | undefined)?.anonymousHandle },
           commentCount: post.commentCount ?? (post as { commentsCount?: number }).commentsCount,
           reactions: post.reactions,
           pollOptions: post.pollOptions,
