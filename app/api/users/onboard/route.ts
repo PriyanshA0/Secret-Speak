@@ -13,6 +13,24 @@ function isDuplicateKeyError(error: unknown) {
   return maybeCode === 11000;
 }
 
+async function createUniqueAnonymousHandle(clerkId: string, excludeUserId?: string) {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const candidate = makeAnonymousHandle(clerkId);
+    const existing = await UserModel.findOne({
+      anonymousHandle: candidate,
+      ...(excludeUserId ? { _id: { $ne: excludeUserId } } : {}),
+    })
+      .select("_id")
+      .lean();
+
+    if (!existing) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Unable to generate a unique anonymous handle.");
+}
+
 export async function POST(request: Request) {
   try {
     console.log("[ONBOARD] POST /api/users/onboard called");
@@ -52,7 +70,7 @@ export async function POST(request: Request) {
       console.log("[ONBOARD] Creating new user:", { college, university, phone, profileVisible });
       for (let attempt = 0; attempt < 8; attempt += 1) {
         try {
-          const candidateHandle = makeAnonymousHandle(userId);
+          const candidateHandle = await createUniqueAnonymousHandle(userId);
           const newUser = await UserModel.create({
             clerkId: userId,
             anonymousHandle: candidateHandle,
@@ -73,6 +91,9 @@ export async function POST(request: Request) {
           if (keyPattern?.clerkId) {
             const racedUser = await UserModel.findOne({ clerkId: userId });
             if (racedUser) {
+              if (!racedUser.anonymousHandle) {
+                racedUser.anonymousHandle = await createUniqueAnonymousHandle(userId, String(racedUser._id));
+              }
               racedUser.college = college;
               racedUser.university = university;
               racedUser.phone = phone;
@@ -104,6 +125,9 @@ export async function POST(request: Request) {
     }
     if (parsed.profileVisible !== undefined) {
       existing.profileVisible = parsed.profileVisible;
+    }
+    if (!existing.anonymousHandle) {
+      existing.anonymousHandle = await createUniqueAnonymousHandle(userId, String(existing._id));
     }
     existing.onboardingComplete = true;
     await existing.save();
