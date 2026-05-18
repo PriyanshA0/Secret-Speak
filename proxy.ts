@@ -11,10 +11,15 @@ const isProtectedRoute = createRouteMatcher([
   "/trending(.*)",
   "/notifications(.*)",
   "/guidelines(.*)",
+  "/api/posts(.*)",
   "/api/users/onboard(.*)",
 ]);
 
 export default clerkMiddleware(async (auth: any, req: any) => {
+  // Allow the debug posts endpoint to be accessed without completing Clerk auth
+  if (typeof req?.url === "string" && req.url.includes("/api/debug/posts")) {
+    return;
+  }
   if (isProtectedRoute(req)) {
     await auth.protect({ unauthenticatedUrl: new URL("/sign-in", req.url).toString() });
   }
