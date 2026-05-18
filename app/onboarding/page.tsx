@@ -38,7 +38,9 @@ export default function OnboardingPage() {
       
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        alert(`Onboarding failed: ${data?.error || data?.details || "Unknown error"}`);
+        const details = typeof data?.details === "string" ? data.details : "";
+        const message = [data?.error, details].filter(Boolean).join(" - ") || "Unknown error";
+        alert(`Onboarding failed: ${message}`);
         return;
       }
       

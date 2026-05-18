@@ -5,6 +5,14 @@ import { onboardingSchema } from "@/lib/validators";
 import { makeAnonymousHandle } from "@/lib/utils";
 import UserModel from "@/models/User";
 
+function isDuplicateKeyError(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const maybeCode = (error as { code?: unknown }).code;
+  return maybeCode === 11000;
+}
+
 export async function POST(request: Request) {
   try {
     console.log("[ONBOARD] POST /api/users/onboard called");
@@ -42,17 +50,46 @@ export async function POST(request: Request) {
       const phone = parsed.phone ?? "";
 
       console.log("[ONBOARD] Creating new user:", { college, university, phone, profileVisible });
-      const newUser = await UserModel.create({
-        clerkId: userId,
-        anonymousHandle: makeAnonymousHandle(userId),
-        college,
-        university,
-        phone,
-        profileVisible,
-        onboardingComplete: true,
-      });
-      console.log("[ONBOARD] User created successfully:", newUser._id);
-      return NextResponse.json({ ok: true, created: true });
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        try {
+          const candidateHandle = makeAnonymousHandle(userId);
+          const newUser = await UserModel.create({
+            clerkId: userId,
+            anonymousHandle: candidateHandle,
+            college,
+            university,
+            phone,
+            profileVisible,
+            onboardingComplete: true,
+          });
+          console.log("[ONBOARD] User created successfully:", newUser._id);
+          return NextResponse.json({ ok: true, created: true });
+        } catch (createError) {
+          if (!isDuplicateKeyError(createError)) {
+            throw createError;
+          }
+
+          const keyPattern = (createError as { keyPattern?: Record<string, number> }).keyPattern;
+          if (keyPattern?.clerkId) {
+            const racedUser = await UserModel.findOne({ clerkId: userId });
+            if (racedUser) {
+              racedUser.college = college;
+              racedUser.university = university;
+              racedUser.phone = phone;
+              racedUser.profileVisible = profileVisible;
+              racedUser.onboardingComplete = true;
+              await racedUser.save();
+              return NextResponse.json({ ok: true, created: false });
+            }
+          }
+
+          if (!keyPattern?.anonymousHandle) {
+            throw createError;
+          }
+        }
+      }
+
+      throw new Error("Failed to allocate a unique anonymous handle. Please retry onboarding.");
     }
 
     console.log("[ONBOARD] Updating existing user");

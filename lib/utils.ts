@@ -13,7 +13,9 @@ export function formatRelativeDate(input: string | Date) {
   );
 }
 
-export function makeAnonymousHandle(clerkId: string) {
-  const suffix = clerkId.slice(-4).toUpperCase();
-  return `anon_${suffix}`;
+export function makeAnonymousHandle(clerkId: string, entropy?: string) {
+  const normalized = clerkId.replace(/[^a-z0-9]/gi, "").toUpperCase();
+  const suffix = normalized.slice(-4) || "USER";
+  const randomPart = (entropy ?? Math.random().toString(36).slice(2, 6)).toUpperCase();
+  return `anon_${suffix}${randomPart}`;
 }
