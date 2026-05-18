@@ -11,7 +11,6 @@ const isProtectedRoute = createRouteMatcher([
   "/trending(.*)",
   "/notifications(.*)",
   "/guidelines(.*)",
-  "/api/posts(.*)",
   "/api/users/onboard(.*)",
 ]);
 
