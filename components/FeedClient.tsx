@@ -48,7 +48,7 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => refresh("latest")
+              onClick={() => refresh("latest")} 
               className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition ${
                 sort === "latest" ? "border-black bg-[var(--accent-orange)] text-black" : "border-black bg-[var(--card-bg)] text-black/80 hover:bg-[var(--accent-yellow)]"
               }`}
@@ -57,7 +57,7 @@ export default function FeedClient({ initialPosts, defaultSort = "latest", initi
             </button>
             <button
               type="button"
-              onClick={() => refresh("trending")
+              onClick={() => refresh("trending")} 
               className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition ${
                 sort === "trending" ? "border-black bg-[var(--accent-orange)] text-black" : "border-black bg-[var(--card-bg)] text-black/80 hover:bg-[var(--accent-yellow)]"
               }`}
